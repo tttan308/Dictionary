@@ -1,5 +1,6 @@
 package view;
 
+import function.FavouriteWord;
 import function.WordList;
 import function.Word;
 import org.xml.sax.SAXException;
@@ -11,21 +12,21 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.Flow;
 
 public class MainFrame {
-    private JTextField searchField;
-    private  JLabel searchIcon;
+    JFrame frame;
+    JPanel bodyPanel;
     private WordList list;
     private Word word = new Word();
     private boolean language = true; //true: English - Vietnamese, false: Vietnamese - English
     private boolean firstAction = true;
-    private boolean addNewWordActive = false;
+    private FavouriteWord listFavouriteWord = new FavouriteWord();
+    private boolean isFavouriteWord = false;
     public MainFrame() throws ParserConfigurationException, IOException, SAXException {
-        JFrame frame = new JFrame("Dictionary");
+        frame = new JFrame("Dictionary");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         list = new WordList();
-        if(language == false )
+        if(!language)
         {
             list.readXMLFile("src\\data\\Viet_Anh.xml");
         }
@@ -34,37 +35,10 @@ public class MainFrame {
         }
 
         JPanel headerPanel = getHeaderFrame();
-        final JPanel[] bodyPanel = {getBodyFrame()};
-        //reload bodyPanel when action searchField
-        searchField.addActionListener(e -> {
-            String text = searchField.getText();
-            word = list.searchWord(text);
-            frame.remove(bodyPanel[0]);
-            bodyPanel[0] = getBodyFrame();
-            frame.add(bodyPanel[0], BorderLayout.CENTER);
-            frame.revalidate();
-            frame.repaint();
-        });
-        //reload bodyPanel when click on search icon
-        searchIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                String text = searchField.getText();
-                word = list.searchWord(text);
-                super.mouseClicked(e);
-                frame.remove(bodyPanel[0]);
-                bodyPanel[0] = getBodyFrame();
-                frame.add(bodyPanel[0], BorderLayout.CENTER);
-                frame.revalidate();
-                frame.repaint();
-            }
-        });
+        JPanel bodyPanel = getBodyFrame();
         frame.add(headerPanel, BorderLayout.PAGE_START);
 
-        frame.add(bodyPanel[0], BorderLayout.CENTER);
-
-
-        //add line border
+        frame.add(bodyPanel, BorderLayout.CENTER);
         frame.getRootPane().setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.decode("#A1A2A9")));
         frame.setSize(800, 600);
         frame.setMinimumSize(new Dimension(650, 150));
@@ -77,8 +51,34 @@ public class MainFrame {
         headerPanel.setLayout(new BorderLayout());
         JPanel logoPanel = new JPanel();
         logoPanel.setLayout(new FlowLayout());
-        JLabel logoIcon = new JLabel(new ImageIcon(getClass().getResource("../img/dictionary.png")));
+        JLabel logoIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/research2.png"))));
         logoIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        //Show JMenuItem when click on logo
+        logoIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JPopupMenu popupMenu = new JPopupMenu();
+                JMenuItem item1 = new JMenuItem("Favorite list word");
+                JMenuItem item2 = new JMenuItem("Statistics look up word");
+                popupMenu.add(item1);
+                popupMenu.add(item2);
+                popupMenu.show(logoIcon, 30, 40);
+                item1.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JFrame favouriteFrame = new JFrame("Favorite list word");
+                        favouriteFrame.setLayout(new FlowLayout());
+                        JPanel favouritePanel = showFavouriteList();
+                        favouriteFrame.add(favouritePanel);
+                        favouriteFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        favouriteFrame.setSize(100, 500);
+                        favouriteFrame.setMinimumSize(new Dimension(100, 150));
+                        favouriteFrame.setLocationRelativeTo(null);
+                        favouriteFrame.setVisible(true);
+                    }
+                });
+            }
+        });
         logoIcon.setBorder(BorderFactory.createEmptyBorder(5, 30, 5, 20));
         logoPanel.add(logoIcon);
         headerPanel.add(logoPanel, BorderLayout.LINE_START);
@@ -86,13 +86,49 @@ public class MainFrame {
         //Search box
         JPanel searchPanel = new JPanel();
         searchPanel.setLayout(new FlowLayout());
-        searchField = new RoundedTextField(10);
+        JTextField searchField = new RoundedTextField(10);
         searchField.setFont(new Font("Arial", Font.PLAIN, 20));
         searchField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        searchIcon = new JLabel(new ImageIcon(getClass().getResource("../img/search.png")));
+        JLabel searchIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/search.png"))));
         searchIcon.setBorder(BorderFactory.createEmptyBorder(6, 5, 5, 5));
         searchIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String wordSearch = searchField.getText();
+                word = list.searchWord(wordSearch);
+                isFavouriteWord = word.getFavouriteWord();
+                if (word.getWord() != null) {
+                    frame.remove(bodyPanel);
+                    bodyPanel = getBodyFrame();
+                    frame.add(bodyPanel, BorderLayout.CENTER);
+                    frame.revalidate();
+                    frame.repaint();
+                }
+                else{
+                    JOptionPane.showMessageDialog(null, "Please enter a word to search!");
+                }
+            }
+        });
 
+        searchIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                String wordSearch = searchField.getText();
+                word = list.searchWord(wordSearch);
+                isFavouriteWord = word.getFavouriteWord();
+                if (word.getWord() != null) {
+                    frame.remove(bodyPanel);
+                    bodyPanel = getBodyFrame();
+                    frame.add(bodyPanel, BorderLayout.CENTER);
+                    frame.revalidate();
+                    frame.repaint();
+                }
+                else{
+                    JOptionPane.showMessageDialog(null, "Please enter a word to search!");
+                }
+            }
+        });
         searchPanel.add(searchField);
         searchPanel.add(searchIcon);
         searchPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 6, 5));
@@ -101,7 +137,7 @@ public class MainFrame {
         JPanel rightHeaderPanel = new JPanel();
         rightHeaderPanel.setLayout(new FlowLayout());
 
-        JLabel addIcon = new JLabel(new ImageIcon(getClass().getResource("../img/add.png")));
+        JLabel addIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/add.png"))));
         addIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         //action
@@ -110,13 +146,13 @@ public class MainFrame {
             public void mouseClicked(MouseEvent e) {
                 //change img
                 if(addIcon.getIcon().toString().contains("add-active.png"))
-                    addIcon.setIcon(new ImageIcon(getClass().getResource("../img/add.png")));
+                    addIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/add.png"))));
                 else if(addIcon.getIcon().toString().contains("add.png"))
-                    addIcon.setIcon(new ImageIcon(getClass().getResource("../img/add-active.png")));
+                    addIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/add-active.png"))));
 
                 JFrame addFrame = new JFrame("Add new word");
                 addFrame.setLayout(new BorderLayout());
-                addFrame.setSize(400, 300);
+                addFrame.setSize(450, 250);
                 JPanel addPanel = addPanel(addFrame, addIcon);
                 addFrame.add(addPanel, BorderLayout.CENTER);
                 addFrame.setLocationRelativeTo(null);
@@ -127,14 +163,14 @@ public class MainFrame {
                     @Override
                     public void windowClosing(WindowEvent e) {
                         super.windowClosing(e);
-                        addIcon.setIcon(new ImageIcon(getClass().getResource("../img/add.png")));
+                        addIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/add.png"))));
                     }
                 });
             }
         });
 
         JPanel changeLanguagesPanel = new JPanel();
-        JLabel changeLanguages = new JLabel(new ImageIcon(getClass().getResource("../img/world.png")));
+        JLabel changeLanguages = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/world.png"))));
         changeLanguagesPanel.add(changeLanguages);
 
         JLabel changeLanguagesText = new JLabel("English - Vietnamese");
@@ -151,31 +187,23 @@ public class MainFrame {
             public void mouseClicked(MouseEvent e) {
                 //change img
                 if(changeLanguages.getIcon().toString().contains("world-active.png")){
-                    changeLanguages.setIcon(new ImageIcon(getClass().getResource("../img/world.png")));
+                    changeLanguages.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/world.png"))));
                     changeLanguagesText.setText("English - Vietnamese");
                     list.clearList();
                     try {
                         list.readXMLFile("src//data//Anh_Viet.xml");
-                    } catch (ParserConfigurationException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (SAXException ex) {
+                    } catch (ParserConfigurationException | IOException | SAXException ex) {
                         throw new RuntimeException(ex);
                     }
                     language = true;
                 }
                 else if(changeLanguages.getIcon().toString().contains("world.png")){
-                    changeLanguages.setIcon(new ImageIcon(getClass().getResource("../img/world-active.png")));
+                    changeLanguages.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/world-active.png"))));
                     changeLanguagesText.setText("Vietnamese - English");
                     list.clearList();
                     try {
                         list.readXMLFile("src//data//Viet_Anh.xml");
-                    } catch (ParserConfigurationException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (SAXException ex) {
+                    } catch (ParserConfigurationException | IOException | SAXException ex) {
                         throw new RuntimeException(ex);
                     }
                     language = false;
@@ -192,46 +220,105 @@ public class MainFrame {
     }
 
     public JPanel getBodyFrame() {
-        JPanel bodyPanel = new JPanel();
-        bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.Y_AXIS));
+        bodyPanel = new JPanel();
+        bodyPanel.setLayout(new BorderLayout());
         ArrayList<String> meaning = word.getMeaning();
-
-        String vocabulary = word.getWord();
+        JPanel wordPanel = new JPanel();
+        wordPanel.setLayout(new BorderLayout());
+        wordPanel.setPreferredSize(new Dimension(400, 30));
+        String vocabulary;
+        if(word.getWord().equals("") && !firstAction )
+            vocabulary = " NOT FOUND!";
+        else vocabulary = word.getWord();
         JLabel wordLabel = new JLabel(vocabulary);
+
         wordLabel.setFont(new Font("Arial", Font.PLAIN, 30));
         wordLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
-
-        bodyPanel.add(wordLabel);
+        wordPanel.add(wordLabel, BorderLayout.LINE_START);
+        JPanel reactionPanel = new JPanel();
+        JLabel removeIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/remove.png"))));
+        removeIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        removeIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //change icon
+                if(removeIcon.getIcon().toString().contains("remove-active.png"))
+                    removeIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/remove.png"))));
+                else if(removeIcon.getIcon().toString().contains("remove.png"))
+                    removeIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/remove-active.png"))));
+                JOptionPane.showMessageDialog(null, "Remove successfully!");
+                list.removeWord(word);
+                bodyPanel.removeAll();
+                bodyPanel.revalidate();
+                bodyPanel.repaint();
+            }
+        });
+        JLabel heartIcon;
+        if(isFavouriteWord)
+            heartIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart-active.png"))));
+        else
+           heartIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart.png"))));
+        heartIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        heartIcon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
+        heartIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                //change icon
+                if(heartIcon.getIcon().toString().contains("heart-active.png")){
+                    heartIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart.png"))));
+                    JOptionPane.showMessageDialog(null, "Remove from favorite successfully!");
+                    word.setFavouriteWord(false);
+                    listFavouriteWord.removeFavouriteWord(word);
+                }
+                else if(heartIcon.getIcon().toString().contains("heart.png")){
+                    heartIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart-active.png"))));
+                    JOptionPane.showMessageDialog(null, "Add to favorite successfully!");
+                    word.setFavouriteWord(true);
+                    listFavouriteWord.addFavouriteWord(word);
+                }
+            }
+        });
+        if(meaning.size() != 0){
+            reactionPanel.add(heartIcon);
+            reactionPanel.add(removeIcon);
+        }
+        wordPanel.add(reactionPanel, BorderLayout.LINE_END);
+        bodyPanel.add(wordPanel, BorderLayout.PAGE_START);
         //show mean
         JPanel meaningPanel = new JPanel();
         meaningPanel.setLayout(new BoxLayout(meaningPanel, BoxLayout.Y_AXIS));
-        if(meaning != null){
-            for(int i = 0; i < meaning.size(); i++){
-                JLabel meaningLabel = new JLabel(meaning.get(i));
-                meaningLabel.setLayout(new FlowLayout());
-                meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
-                meaningLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
-                meaningPanel.add(meaningLabel);
-            }
+        for (String s : meaning) {
+            JLabel meaningLabel = new JLabel(s);
+            meaningLabel.setLayout(new FlowLayout());
+            meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+            meaningLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
+            meaningPanel.add(meaningLabel);
         }
-        if(meaning.size() == 0 && firstAction == false){
+        if(meaning.size() == 0 && !firstAction){
             JLabel meaningLabel = new JLabel("Từ này chưa có trong từ điển - This word is not in the dictionary");
             meaningLabel.setLayout(new FlowLayout());
             meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
             meaningLabel.setBorder(BorderFactory.createEmptyBorder(5, 20, 5, 5));
             meaningPanel.add(meaningLabel);
         }
-        bodyPanel.add(meaningPanel);
+        bodyPanel.add(meaningPanel, BorderLayout.CENTER);
         firstAction = false;
+        bodyPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         return bodyPanel;
     }
 
     public JPanel addPanel(Frame frame, JLabel addIcon){
         JPanel addPanel = new JPanel();
-        addPanel.setLayout(new BoxLayout(addPanel, BoxLayout.Y_AXIS));
+        addPanel.setLayout(new FlowLayout());
 
+        JPanel total = new JPanel();
+        total.setLayout(new BorderLayout());
+        //set height of JTextField
         JTextField wordField = new JTextField(20);
+        wordField.setPreferredSize(new Dimension(20, 30));
+        wordField.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
         JTextArea meaningField = new JTextArea(5, 20);
+        meaningField.setPreferredSize(new Dimension(20, 30));
         meaningField.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
@@ -241,8 +328,12 @@ public class MainFrame {
                 }
         });
         JLabel wordLabel = new JLabel("Word: ");
+        wordLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+        wordLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         JLabel meaningLabel = new JLabel("Meaning: ");
+        meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
         JButton addButton = new JButton("Add new word");
+        addButton.setFont(new Font("Arial", Font.PLAIN, 20));
 
         JPanel wordPanel = new JPanel();
         wordPanel.setLayout(new FlowLayout());
@@ -279,9 +370,33 @@ public class MainFrame {
                 return;
             }
         });
-        addPanel.add(wordPanel);
-        addPanel.add(meaningPanel);
-        addPanel.add(buttonPanel);
+        total.add(wordPanel, BorderLayout.PAGE_START);
+        total.add(meaningPanel, BorderLayout.CENTER);
+        total.add(buttonPanel, BorderLayout.PAGE_END);
+        addPanel.add(total);
         return addPanel;
     }
+
+    public JPanel showFavouriteList(){
+        JPanel showFavouriteListPanel = new JPanel();
+        showFavouriteListPanel.setLayout(new BorderLayout());
+        JLabel titlePanel = new JLabel("LIST OF FAVOURITE WORDS");
+        titlePanel.setFont(new Font("Arial", Font.BOLD, 20));
+
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
+        titlePanel.setHorizontalAlignment(JLabel.CENTER);
+        String[] column = {"Word"};
+        ArrayList<String> listWord = listFavouriteWord.getListWord();
+        String[][] data = new String[listWord.size()][1];
+        for(int i = 0; i < listWord.size(); i++){
+            data[i][0] = listWord.get(i);
+        }
+        JTable table = new JTable(data, column);
+        table.setRowHeight(40);
+        table.setFont(new Font("Arial", Font.PLAIN, 15));
+        JScrollPane scrollPane = new JScrollPane(table);
+        showFavouriteListPanel.add(titlePanel, BorderLayout.PAGE_START);
+        showFavouriteListPanel.add(scrollPane, BorderLayout.CENTER);
+        return showFavouriteListPanel;
+        }
 }

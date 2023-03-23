@@ -5,14 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="33794dd1-840f-46a5-bbc9-d3332b360687" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/data/Anh_Viet.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/data/Viet_Anh.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/function/Word.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/function/WordList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/view/MainFrame.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/view/RoundedTextField.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/function/FavouriteWord.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/function/Word.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/function/Word.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/function/WordList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/function/WordList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/view/MainFrame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/view/MainFrame.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

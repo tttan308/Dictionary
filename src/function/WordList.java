@@ -1,7 +1,6 @@
 package function;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -10,13 +9,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.TreeSet;
 
 public class WordList {
-    private TreeMap<String, ArrayList<String>> listWord ;
+    private Set<Word> listWord;
     public WordList() {
-        listWord = new TreeMap<>();
+        listWord = new TreeSet<>();
     }
 
     public void readXMLFile(String path) throws ParserConfigurationException, IOException, SAXException {
@@ -31,22 +30,20 @@ public class WordList {
             String meaning = list.item(i).getChildNodes().item(3).getTextContent();
             meaning = meaning.substring(0, meaning.lastIndexOf("\n"));
             meaning = meaning.replace("+", ":");
-            ArrayList<String> listMeaning = new ArrayList<>();
             String[] arrMeaning = meaning.split("\n");
-            for (String s : arrMeaning) {
-                listMeaning.add(s);
-            }
-            listWord.put(word, listMeaning);
+            ArrayList<String> listMeaning = new ArrayList<>(Arrays.asList(arrMeaning));
+            Word w = new Word(word, listMeaning, false);
+            listWord.add(w);
         }
     }
 
     public Word searchWord(String word) {
         Word res = new Word();
-        ArrayList<String> meaning = new ArrayList<>();
-        meaning = listWord.get(word);
-        if (meaning != null) {
-            res.setWord(word);
-            res.setMeaning(meaning);
+        for (Word w : listWord) {
+            if (w.getWord().equals(word)) {
+                res = w;
+                break;
+            }
         }
         return res;
     }
@@ -55,20 +52,14 @@ public class WordList {
         listWord.clear();
     }
 
-    public boolean checkExists(String word) {
-        return listWord.containsKey(word);
-    }
+
     public void addWord(String word, ArrayList<String> meaning) {
-        if(!checkExists(word)) {
-            listWord.put(word, meaning);
-        }
-        else{
-            throw new RuntimeException("Word already exists");
-        }
+        Word w = new Word(word, meaning, false);
+        listWord.add(w);
     }
 
     public void removeWord(Word word) {
-        listWord.remove(word.getWord());
+        listWord.remove(word);
         word.setWord("");
         word.setMeaning(new ArrayList<>());
     }
