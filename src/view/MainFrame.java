@@ -1,8 +1,8 @@
 package view;
 
 import function.FavouriteWord;
-import function.WordList;
-import function.Word;
+import function.ListWord;
+import function.StatisticsWord;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -16,22 +16,28 @@ import java.util.Objects;
 public class MainFrame {
     JFrame frame;
     JPanel bodyPanel;
-    private WordList list;
-    private Word word = new Word();
+    private ListWord list = new ListWord() ;
     private boolean language = true; //true: English - Vietnamese, false: Vietnamese - English
     private boolean firstAction = true;
     private FavouriteWord listFavouriteWord = new FavouriteWord();
     private boolean isFavouriteWord = false;
+    private String word = "";
+
+    private StatisticsWord statisticsWord = new StatisticsWord();
     public MainFrame() throws ParserConfigurationException, IOException, SAXException {
         frame = new JFrame("Dictionary");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        list = new WordList();
-        if(!language)
-        {
+        if(!language){
             list.readXMLFile("src\\data\\Viet_Anh.xml");
+            listFavouriteWord.writeFile("src\\data\\FavouriteWord_Viet.txt");
+            listFavouriteWord.showList();
+            listFavouriteWord.readFile("src\\data\\FavouriteWord_Anh.txt");
         }
         else {
             list.readXMLFile("src\\data\\Anh_Viet.xml");
+            listFavouriteWord.writeFile("src\\data\\FavouriteWord_Eng.txt");
+            listFavouriteWord.showList();
+            listFavouriteWord.readFile("src\\data\\FavouriteWord_Viet.txt");
         }
 
         JPanel headerPanel = getHeaderFrame();
@@ -71,12 +77,25 @@ public class MainFrame {
                         JPanel favouritePanel = showFavouriteList();
                         favouriteFrame.add(favouritePanel);
                         favouriteFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                        favouriteFrame.setSize(100, 500);
-                        favouriteFrame.setMinimumSize(new Dimension(100, 150));
+                        favouriteFrame.setSize(400, 400);
                         favouriteFrame.setLocationRelativeTo(null);
                         favouriteFrame.setVisible(true);
                     }
                 });
+
+                item2.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JFrame statisticFrame = new JFrame("Statistics look up word");
+                        statisticFrame.setLayout(new FlowLayout());
+                        JPanel statisticPanel = showStatistic();
+                        statisticFrame.add(statisticPanel);
+                        statisticFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        statisticFrame.setSize(400, 400);
+                        statisticFrame.setLocationRelativeTo(null);
+                        statisticFrame.setVisible(true);
+                    }
+                } );
             }
         });
         logoIcon.setBorder(BorderFactory.createEmptyBorder(5, 30, 5, 20));
@@ -96,9 +115,16 @@ public class MainFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String wordSearch = searchField.getText();
-                word = list.searchWord(wordSearch);
-                isFavouriteWord = word.getFavouriteWord();
-                if (word.getWord() != null) {
+                if(list.searchWord(wordSearch) == true){
+                    word = wordSearch;
+                }
+                else{
+                    word = "";
+                }
+                isFavouriteWord = listFavouriteWord.isFavouriteWord(word);
+                statisticsWord.addWord(word);
+                statisticsWord.showList();
+                if (word != null) {
                     frame.remove(bodyPanel);
                     bodyPanel = getBodyFrame();
                     frame.add(bodyPanel, BorderLayout.CENTER);
@@ -115,9 +141,15 @@ public class MainFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 String wordSearch = searchField.getText();
-                word = list.searchWord(wordSearch);
-                isFavouriteWord = word.getFavouriteWord();
-                if (word.getWord() != null) {
+                if(list.searchWord(wordSearch) == true){
+                    word = wordSearch;
+                }
+                else{
+                    word = "";
+                }
+                isFavouriteWord = listFavouriteWord.isFavouriteWord(word);
+                System.out.println(isFavouriteWord);
+                if (word != null) {
                     frame.remove(bodyPanel);
                     bodyPanel = getBodyFrame();
                     frame.add(bodyPanel, BorderLayout.CENTER);
@@ -192,6 +224,9 @@ public class MainFrame {
                     list.clearList();
                     try {
                         list.readXMLFile("src//data//Anh_Viet.xml");
+                        listFavouriteWord.writeFile("src\\data\\FavouriteWord_Viet.txt");
+                        listFavouriteWord.showList();
+                        listFavouriteWord.readFile("src\\data\\FavouriteWord_Eng.txt");
                     } catch (ParserConfigurationException | IOException | SAXException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -203,6 +238,9 @@ public class MainFrame {
                     list.clearList();
                     try {
                         list.readXMLFile("src//data//Viet_Anh.xml");
+                        listFavouriteWord.writeFile("src\\data\\FavouriteWord_Anh.txt");
+                        listFavouriteWord.showList();
+                        listFavouriteWord.readFile("src\\data\\FavouriteWord_Viet.txt");
                     } catch (ParserConfigurationException | IOException | SAXException ex) {
                         throw new RuntimeException(ex);
                     }
@@ -222,14 +260,20 @@ public class MainFrame {
     public JPanel getBodyFrame() {
         bodyPanel = new JPanel();
         bodyPanel.setLayout(new BorderLayout());
-        ArrayList<String> meaning = word.getMeaning();
+        ArrayList<String> meaning;
         JPanel wordPanel = new JPanel();
         wordPanel.setLayout(new BorderLayout());
         wordPanel.setPreferredSize(new Dimension(400, 30));
         String vocabulary;
-        if(word.getWord().equals("") && !firstAction )
+        if(word.equals("") && !firstAction ){
             vocabulary = " NOT FOUND!";
-        else vocabulary = word.getWord();
+            meaning = new ArrayList<>();
+            meaning.add("Please enter a word to search!");
+        }
+        else{
+            vocabulary = word;
+            meaning = list.getMeaning(word);
+        }
         JLabel wordLabel = new JLabel(vocabulary);
 
         wordLabel.setFont(new Font("Arial", Font.PLAIN, 30));
@@ -253,11 +297,10 @@ public class MainFrame {
                 bodyPanel.repaint();
             }
         });
+
         JLabel heartIcon;
-        if(isFavouriteWord)
-            heartIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart-active.png"))));
-        else
-           heartIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart.png"))));
+        if(isFavouriteWord) heartIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart-active.png"))));
+        else heartIcon = new JLabel(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart.png"))));
         heartIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
         heartIcon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
         heartIcon.addMouseListener(new MouseAdapter() {
@@ -267,18 +310,17 @@ public class MainFrame {
                 if(heartIcon.getIcon().toString().contains("heart-active.png")){
                     heartIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart.png"))));
                     JOptionPane.showMessageDialog(null, "Remove from favorite successfully!");
-                    word.setFavouriteWord(false);
                     listFavouriteWord.removeFavouriteWord(word);
                 }
                 else if(heartIcon.getIcon().toString().contains("heart.png")){
                     heartIcon.setIcon(new ImageIcon(Objects.requireNonNull(getClass().getResource("../img/heart-active.png"))));
                     JOptionPane.showMessageDialog(null, "Add to favorite successfully!");
-                    word.setFavouriteWord(true);
                     listFavouriteWord.addFavouriteWord(word);
                 }
             }
         });
-        if(meaning.size() != 0){
+
+        if(meaning != null  && meaning.size() != 0){
             reactionPanel.add(heartIcon);
             reactionPanel.add(removeIcon);
         }
@@ -287,14 +329,16 @@ public class MainFrame {
         //show mean
         JPanel meaningPanel = new JPanel();
         meaningPanel.setLayout(new BoxLayout(meaningPanel, BoxLayout.Y_AXIS));
-        for (String s : meaning) {
-            JLabel meaningLabel = new JLabel(s);
-            meaningLabel.setLayout(new FlowLayout());
-            meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
-            meaningLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
-            meaningPanel.add(meaningLabel);
+        if(meaning != null){
+            for (String s : meaning) {
+                JLabel meaningLabel = new JLabel(s);
+                meaningLabel.setLayout(new FlowLayout());
+                meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+                meaningLabel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 5));
+                meaningPanel.add(meaningLabel);
+            }
         }
-        if(meaning.size() == 0 && !firstAction){
+        if(!firstAction){
             JLabel meaningLabel = new JLabel("Từ này chưa có trong từ điển - This word is not in the dictionary");
             meaningLabel.setLayout(new FlowLayout());
             meaningLabel.setFont(new Font("Arial", Font.PLAIN, 20));
@@ -398,5 +442,10 @@ public class MainFrame {
         showFavouriteListPanel.add(titlePanel, BorderLayout.PAGE_START);
         showFavouriteListPanel.add(scrollPane, BorderLayout.CENTER);
         return showFavouriteListPanel;
+        }
+
+        private JPanel showStatistic() {
+            JPanel showStatisticPanel = new JPanel();
+            return showStatisticPanel;
         }
 }

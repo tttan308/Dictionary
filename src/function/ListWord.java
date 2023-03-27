@@ -10,12 +10,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.TreeSet;
 
-public class WordList {
-    private Set<Word> listWord;
-    public WordList() {
-        listWord = new TreeSet<>();
+public class ListWord {
+    private Map<String, ArrayList<String>> listWord;
+    public ListWord() {
+        listWord = new TreeMap<>();
     }
 
     public void readXMLFile(String path) throws ParserConfigurationException, IOException, SAXException {
@@ -32,39 +31,28 @@ public class WordList {
             meaning = meaning.replace("+", ":");
             String[] arrMeaning = meaning.split("\n");
             ArrayList<String> listMeaning = new ArrayList<>(Arrays.asList(arrMeaning));
-            Word w = new Word(word, listMeaning, false);
-            listWord.add(w);
+            listWord.put(word, listMeaning);
         }
     }
 
-    public Word searchWord(String word) {
-        Word res = new Word();
-        for (Word w : listWord) {
-            if (w.getWord().equals(word)) {
-                res = w;
-                break;
-            }
-        }
-        return res;
+    public boolean searchWord(String word) {
+        return listWord.containsKey(word);
     }
 
     public void clearList() {
         listWord.clear();
     }
 
-
     public void addWord(String word, ArrayList<String> meaning) {
-        Word w = new Word(word, meaning, false);
-        listWord.add(w);
+        listWord.put(word, meaning);
     }
 
-    public void removeWord(Word word) {
+    public void removeWord(String word) {
         listWord.remove(word);
-        word.setWord("");
-        word.setMeaning(new ArrayList<>());
     }
-    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
-        WordList list = new WordList();
-        list.readXMLFile("src\\data\\Anh_Viet.xml");
-}
+
+    public ArrayList<String> getMeaning(String word){
+        ArrayList<String> listMeaning = listWord.get(word);
+        return listMeaning;
+    }
 }
