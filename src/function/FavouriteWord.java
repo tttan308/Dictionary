@@ -29,32 +29,25 @@ public class FavouriteWord {
         return listWord;
     }
 
-    public void showList(){
-        for (String word : listFavouriteWord.keySet()) {
-            System.out.println(word);
-        }
+    public void clearList() {
+        listFavouriteWord.clear();
     }
     public void writeFile(String path) {
         File file = new File(path);
-        //Delete file if exist
         if (file.exists()) {
             file.delete();
             file = new File(path);
         }
         FileOutputStream out = null;
         try {
-            //write with utf8
             out = new FileOutputStream(file);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //Write favourite word to file
         for (String word : listFavouriteWord.keySet()) {
             try {
                 out.write(word.getBytes("UTF8"));
                 out.write("\n".getBytes("UTF8"));
-                out.write("mahoadongnaydedocfiledehonabcxyz\n".getBytes("UTF8"));
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -66,27 +59,20 @@ public class FavouriteWord {
         File file = new File(path);
         BufferedReader br = null;
         try {
-            //read with utf8
             br =  new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF8"));
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //Read favourite word from file
         String str = "";
         while (true) {
             try {
                 str = br.readLine();
-                if (str == null) {
-                    break;
-                }
-                if (str.equals("mahoadongnaydedocfiledehonabcxyz")) {
-                    continue;
-                }
+                if (str == null) break;
                 listFavouriteWord.put(str, true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
     }
 }

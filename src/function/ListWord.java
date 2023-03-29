@@ -7,8 +7,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class ListWord {
@@ -19,10 +18,9 @@ public class ListWord {
 
     public void readXMLFile(String path) throws ParserConfigurationException, IOException, SAXException {
         File file = new File(path);
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(file);
-        doc.getDocumentElement().normalize();
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(file);
         NodeList list = doc.getElementsByTagName("record");
         for (int i = 0; i < list.getLength(); i++) {
             String word = list.item(i).getChildNodes().item(1).getTextContent();
@@ -36,7 +34,7 @@ public class ListWord {
     }
 
     public boolean searchWord(String word) {
-        return listWord.containsKey(word);
+        return listWord.containsKey(word.trim());
     }
 
     public void clearList() {
@@ -54,5 +52,17 @@ public class ListWord {
     public ArrayList<String> getMeaning(String word){
         ArrayList<String> listMeaning = listWord.get(word);
         return listMeaning;
+    }
+
+    public void removeListWordRemoved(ListWordRemoved listWordRemoved){
+        for(String word: listWordRemoved.getListWord()){
+            listWord.remove(word);
+        }
+    }
+
+    public void addListWordAdded(ListWordAdded listWordAdded){
+        for(String word: listWordAdded.getListWord().keySet()){
+            listWord.put(word, listWordAdded.getListWord().get(word));
+        }
     }
 }
