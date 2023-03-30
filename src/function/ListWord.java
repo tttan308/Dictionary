@@ -37,21 +37,23 @@ public class ListWord {
         return listWord.containsKey(word.trim());
     }
 
-    public void clearList() {
-        listWord.clear();
-    }
-
     public void addWord(String word, ArrayList<String> meaning) {
-        listWord.put(word, meaning);
+        if(!listWord.containsKey(word)){
+            listWord.put(word, meaning);
+        }
+        else{
+            throw new IllegalArgumentException("Word is already exist");
+        }
     }
 
     public void removeWord(String word) {
-        listWord.remove(word);
+        if(listWord.containsKey(word)){
+            listWord.remove(word);
+        }
     }
 
     public ArrayList<String> getMeaning(String word){
-        ArrayList<String> listMeaning = listWord.get(word);
-        return listMeaning;
+        return listWord.get(word);
     }
 
     public void removeListWordRemoved(ListWordRemoved listWordRemoved){
@@ -62,7 +64,13 @@ public class ListWord {
 
     public void addListWordAdded(ListWordAdded listWordAdded){
         for(String word: listWordAdded.getListWord().keySet()){
-            listWord.put(word, listWordAdded.getListWord().get(word));
+            if(!listWord.containsKey(word)){
+                listWord.put(word, listWordAdded.getListWord().get(word));
+            }
+            else{
+                listWord.remove(word);
+                listWord.put(word, listWordAdded.getListWord().get(word));
+            }
         }
     }
 }

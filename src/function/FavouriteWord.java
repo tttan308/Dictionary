@@ -11,16 +11,19 @@ public class FavouriteWord {
     public FavouriteWord() {
         listFavouriteWord = new TreeMap<>();
     }
+
     public void addFavouriteWord(String word){
         listFavouriteWord.put(word, true);
     }
+
     public void removeFavouriteWord(String word) {
-        listFavouriteWord.remove(word);
+        if (listFavouriteWord.containsKey(word)) listFavouriteWord.remove(word);
     }
 
     public boolean isFavouriteWord(String word) {
         return listFavouriteWord.containsKey(word);
     }
+
     public ArrayList<String>  getListWord(){
         ArrayList<String> listWord = new ArrayList<>();
         for (String word : listFavouriteWord.keySet()) {
@@ -29,9 +32,6 @@ public class FavouriteWord {
         return listWord;
     }
 
-    public void clearList() {
-        listFavouriteWord.clear();
-    }
     public void writeFile(String path) {
         File file = new File(path);
         if (file.exists()) {
@@ -73,6 +73,5 @@ public class FavouriteWord {
                 e.printStackTrace();
             }
         }
-
     }
 }

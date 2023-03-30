@@ -15,8 +15,20 @@ public class ListWordAdded {
     public Map<String, ArrayList<String>> getListWord() {
         return listWord;
     }
+
     public void addWord(String word, ArrayList<String> meaning) {
-        listWord.put(word, meaning);
+        if(!listWord.containsKey(word)){
+            listWord.put(word, meaning);
+        }
+        else{
+            throw new IllegalArgumentException("Word is already exist");
+        }
+    }
+
+    public void removeWord(String word) {
+        if(listWord.containsKey(word)){
+            listWord.remove(word);
+        }
     }
 
     public void writeFile(String path){
@@ -46,6 +58,7 @@ public class ListWordAdded {
             }
         }
     }
+
     public void readFile(String path){
         File file = new File(path);
         listWord.clear();

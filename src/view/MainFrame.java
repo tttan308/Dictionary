@@ -19,41 +19,54 @@ import java.util.*;
 public class MainFrame {
     JFrame frame;
     JPanel bodyPanel;
-    private ListWord list = new ListWord() ;
-    private ListWordRemoved listRemoved = new ListWordRemoved();
-    private ListWordAdded listAdded = new ListWordAdded();
+    private ListWord listEng = new ListWord() ;
+    private ListWord listViet = new ListWord();
+    private ListWordRemoved listRemovedEng = new ListWordRemoved();
+    private ListWordRemoved listRemovedViet = new ListWordRemoved();
+    private ListWordAdded listAddedEng = new ListWordAdded();
+    private ListWordAdded listAddedViet = new ListWordAdded();
+    private FavouriteWord listFavouriteWordEng = new FavouriteWord();
+    private FavouriteWord listFavouriteWordViet = new FavouriteWord();
+    private StatisticsWord statisticsWordEng = new StatisticsWord();
+    private StatisticsWord statisticsWordViet = new StatisticsWord();
     private boolean language = true; //true: English - Vietnamese, false: Vietnamese - English
     private static boolean changeLanguage = true;
     private static boolean changeStatistics = true;
     private boolean firstAction = true;
-    private FavouriteWord listFavouriteWord = new FavouriteWord();
     private boolean isFavouriteWord = false;
     private String word = "";
-    private StatisticsWord statisticsWord = new StatisticsWord();
     public MainFrame() {
         frame = new JFrame("Dictionary");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Read data from XML file
-        try{
-            list.readXMLFile("data//Anh_Viet.xml");
-        } catch (Exception e){
+        try {
+            listEng.readXMLFile("data//Anh_Viet.xml");
+            listViet.readXMLFile("data//Viet_Anh.xml");
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
 
         //Read data from favourite word file
-        listFavouriteWord.readFile("data//FavouriteWord_Eng.txt");
+        listFavouriteWordEng.readFile("data//FavouriteWord_Eng.txt");
+        listFavouriteWordViet.readFile("data//FavouriteWord_Viet.txt");
 
         //Read data from statistics word file
-        statisticsWord.readFile("data//StatisticsWord_Eng.txt");
-
-        //Read data from added word file
-        listAdded.readFile("data//AddedWord_Eng.txt");
-        list.addListWordAdded(listAdded);
+        statisticsWordEng.readFile("data//StatisticsWord_Eng.txt");
+        statisticsWordViet.readFile("data//StatisticsWord_Viet.txt");
 
         //Read data from removed word file
-        listRemoved.readFile("data//RemovedWord_Eng.txt");
-        list.removeListWordRemoved(listRemoved);
+        listRemovedEng.readFile("data//RemovedWord_Eng.txt");
+        listRemovedViet.readFile("data//RemovedWord_Viet.txt");
+        listEng.removeListWordRemoved(listRemovedEng);
+        listViet.removeListWordRemoved(listRemovedViet);
+
+        //Read data from added word file
+        listAddedEng.readFile("data//AddedWord_Eng.txt");
+        listAddedViet.readFile("data//AddedWord_Viet.txt");
+        listEng.addListWordAdded(listAddedEng);
+        listViet.addListWordAdded(listAddedViet);
+
 
         //Get container
         JPanel headerPanel = getHeaderFrame();
@@ -74,18 +87,14 @@ public class MainFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                if(!language){
-                    listFavouriteWord.writeFile("data//FavouriteWord_Viet.txt");
-                    statisticsWord.writeFile("data\\StatisticsWord_Viet.txt");
-                    listAdded.writeFile("data\\AddedWord_Viet.txt");
-                    listRemoved.writeFile("data\\RemovedWord_Viet.txt");
-                }
-                else{
-                    listFavouriteWord.writeFile("data\\FavouriteWord_Eng.txt");
-                    statisticsWord.writeFile("data\\StatisticsWord_Eng.txt");
-                    listAdded.writeFile("data\\AddedWord_Eng.txt");
-                    listRemoved.writeFile("data\\RemovedWord_Eng.txt");
-                }
+                listFavouriteWordEng.writeFile("data//FavouriteWord_Eng.txt");
+                listFavouriteWordViet.writeFile("data//FavouriteWord_Viet.txt");
+                statisticsWordEng.writeFile("data//StatisticsWord_Eng.txt");
+                statisticsWordViet.writeFile("data//StatisticsWord_Viet.txt");
+                listRemovedEng.writeFile("data//RemovedWord_Eng.txt");
+                listRemovedViet.writeFile("data//RemovedWord_Viet.txt");
+                listAddedEng.writeFile("data//AddedWord_Eng.txt");
+                listAddedViet.writeFile("data//AddedWord_Viet.txt");
             }
         });
     }
@@ -130,14 +139,6 @@ public class MainFrame {
                         @Override
                         public void windowClosing(WindowEvent e) {
                             super.windowClosing(e);
-                            if(language){
-                                listFavouriteWord.writeFile("data//FavouriteWord_Viet.txt");
-                                listFavouriteWord.readFile("data//FavouriteWord_Eng.txt");
-                            }
-                            else{
-                                listFavouriteWord.writeFile("data//FavouriteWord_Eng.txt");
-                                listFavouriteWord.readFile("data//FavouriteWord_Viet.txt");
-                            }
                         }
                     });
                 });
@@ -157,14 +158,6 @@ public class MainFrame {
                         @Override
                         public void windowClosing(WindowEvent e) {
                             super.windowClosing(e);
-                            if(language){
-                                statisticsWord.writeFile("data//StatisticsWord_Viet.txt");
-                                statisticsWord.readFile("data//StatisticsWord_Eng.txt");
-                            }
-                            else{
-                                statisticsWord.writeFile("data//StatisticsWord_Eng.txt");
-                                statisticsWord.readFile("data//StatisticsWord_Viet.txt");
-                            }
                         }
                     });
                 });
@@ -183,12 +176,22 @@ public class MainFrame {
         searchField.addActionListener(e -> {
             String wordSearch = searchField.getText();
             wordSearch = wordSearch.trim();
-            if(list.searchWord(wordSearch)){
-                word = wordSearch;
-                isFavouriteWord = listFavouriteWord.isFavouriteWord(word);
-                statisticsWord.addWord(word);
+            if(language){
+                if(listEng.searchWord(wordSearch)){
+                    word = wordSearch;
+                    isFavouriteWord = listFavouriteWordEng.isFavouriteWord(word);
+                    statisticsWordEng.addWord(word);
+                }
+                else word = "";
             }
-            else word = "";
+            else{
+                if(listViet.searchWord(wordSearch)){
+                    word = wordSearch;
+                    isFavouriteWord = listFavouriteWordViet.isFavouriteWord(word);
+                    statisticsWordViet.addWord(word);
+                }
+                else word = "";
+            }
             frame.remove(bodyPanel);
             bodyPanel = getBodyFrame();
             frame.add(bodyPanel, BorderLayout.CENTER);
@@ -205,10 +208,22 @@ public class MainFrame {
             public void mouseClicked(MouseEvent e) {
                 String wordSearch = searchField.getText();
                 wordSearch = wordSearch.trim();
-                if(list.searchWord(wordSearch)) word = wordSearch;
-                else word = "";
-                isFavouriteWord = listFavouriteWord.isFavouriteWord(word);
-                statisticsWord.addWord(word);
+                if(language){
+                    if(listEng.searchWord(wordSearch)){
+                        word = wordSearch;
+                        isFavouriteWord = listFavouriteWordEng.isFavouriteWord(word);
+                        statisticsWordEng.addWord(word);
+                    }
+                    else word = "";
+                }
+                else{
+                    if(listViet.searchWord(wordSearch)){
+                        word = wordSearch;
+                        isFavouriteWord = listFavouriteWordViet.isFavouriteWord(word);
+                        statisticsWordViet.addWord(word);
+                    }
+                    else word = "";
+                }
                 frame.remove(bodyPanel);
                 bodyPanel = getBodyFrame();
                 frame.add(bodyPanel, BorderLayout.CENTER);
@@ -231,7 +246,6 @@ public class MainFrame {
         addIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //change img
                 if(addIcon.getIcon().toString().contains("add-active.png"))
                     addIcon.setIcon(new ImageIcon("img//add.png"));
                 else if(addIcon.getIcon().toString().contains("add.png"))
@@ -274,61 +288,29 @@ public class MainFrame {
                 if(changeLanguages.getIcon().toString().contains("world-active.png")){
                     changeLanguages.setIcon(new ImageIcon("img//world.png"));
                     changeLanguagesText.setText("English - Vietnamese");
-                    list.clearList();
                     word = "";
-                    changeLanguage = true;
-                    changeStatistics = true;
                     searchField.setText("");
                     frame.remove(bodyPanel);
                     firstAction = true;
                     bodyPanel = getBodyFrame();
                     frame.add(bodyPanel, BorderLayout.CENTER);
                     frame.revalidate();
-                    try {
-                        list.readXMLFile("data\\Anh_Viet.xml");
-                        listFavouriteWord.writeFile("data\\FavouriteWord_Viet.txt");
-                        listFavouriteWord.readFile("data\\FavouriteWord_Eng.txt");
-                        statisticsWord.writeFile("data\\StatisticsWord_Viet.txt");
-                        statisticsWord.readFile("data\\StatisticsWord_Eng.txt");
-                        listRemoved.writeFile("data\\RemovedWord_Viet.txt");
-                        listRemoved.readFile("data\\RemovedWord_Eng.txt");
-                        list.removeListWordRemoved(listRemoved);
-                        listAdded.writeFile("data\\AddedWord_Viet.txt");
-                        listAdded.readFile("data\\AddedWord_Eng.txt");
-                        list.addListWordAdded(listAdded);
-                    } catch (ParserConfigurationException | IOException | SAXException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    changeLanguage = true;
+                    changeStatistics = true;
                     language = true;
                 }
                 else if(changeLanguages.getIcon().toString().contains("world.png")){
                     changeLanguages.setIcon(new ImageIcon("img//world-active.png"));
                     changeLanguagesText.setText("Vietnamese - English");
-                    list.clearList();
                     word = "";
-                    changeLanguage = false;
-                    changeStatistics = false;
                     searchField.setText("");
                     frame.remove(bodyPanel);
                     firstAction = true;
                     bodyPanel = getBodyFrame();
                     frame.add(bodyPanel, BorderLayout.CENTER);
                     frame.revalidate();
-                    try {
-                        list.readXMLFile("data//Viet_Anh.xml");
-                        listFavouriteWord.writeFile("data\\FavouriteWord_Eng.txt");
-                        listFavouriteWord.readFile("data\\FavouriteWord_Viet.txt");
-                        statisticsWord.writeFile("data\\StatisticsWord_Eng.txt");
-                        statisticsWord.readFile("data\\StatisticsWord_Viet.txt");
-                        listRemoved.writeFile("data\\RemovedWord_Eng.txt");
-                        listRemoved.readFile("data\\RemovedWord_Viet.txt");
-                        list.removeListWordRemoved(listRemoved);
-                        listAdded.writeFile("data\\AddedWord_Eng.txt");
-                        listAdded.readFile("data\\AddedWord_Viet.txt");
-                        list.addListWordAdded(listAdded);
-                    } catch (ParserConfigurationException | IOException | SAXException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    changeLanguage = false;
+                    changeStatistics = false;
                     language = false;
                 }
             }
@@ -358,7 +340,8 @@ public class MainFrame {
         }
         else{
             vocabulary = word;
-            meaning = list.getMeaning(word);
+            if(language) meaning = listEng.getMeaning(word);
+            else meaning = listViet.getMeaning(word);
         }
         JLabel wordLabel = new JLabel(vocabulary);
 
@@ -371,14 +354,31 @@ public class MainFrame {
         removeIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //change icon
+                if(!word.equals("") && language) listEng.removeWord(word);
+                else if(!word.equals("") && !language) listViet.removeWord(word);
                 if(removeIcon.getIcon().toString().contains("remove-active.png"))
+                {
                     removeIcon.setIcon(new ImageIcon("img//remove.png"));
-                else if(removeIcon.getIcon().toString().contains("remove.png"))
+                }
+                else if(removeIcon.getIcon().toString().contains("remove.png")) {
                     removeIcon.setIcon(new ImageIcon("img//remove-active.png"));
-                JOptionPane.showMessageDialog(null, "Remove successfully!");
-                list.removeWord(word);
-                listRemoved.addWord(word);
+                    if(language) {
+                        listEng.removeWord(word);
+                        listFavouriteWordEng.removeFavouriteWord(word);
+                        listRemovedEng.addWord(word);
+                        listAddedEng.removeWord(word);
+                        statisticsWordEng.removeWord(word);
+                        JOptionPane.showMessageDialog(null, "Remove successfully!");
+                    }
+                    else {
+                        listViet.removeWord(word);
+                        listFavouriteWordViet.removeFavouriteWord(word);
+                        listRemovedViet.addWord(word);
+                        listAddedViet.removeWord(word);
+                        statisticsWordViet.removeWord(word);
+                        JOptionPane.showMessageDialog(null, "Xóa thành công!");
+                    }
+                }
                 bodyPanel.removeAll();
                 bodyPanel.revalidate();
                 bodyPanel.repaint();
@@ -396,11 +396,13 @@ public class MainFrame {
                 //change icon
                 if(heartIcon.getIcon().toString().contains("heart-active.png")){
                     heartIcon.setIcon(new ImageIcon("img//heart.png"));
-                    listFavouriteWord.removeFavouriteWord(word);
+                    if(language) listFavouriteWordEng.removeFavouriteWord(word);
+                    else listFavouriteWordViet.removeFavouriteWord(word);
                 }
                 else if(heartIcon.getIcon().toString().contains("heart.png")){
                     heartIcon.setIcon(new ImageIcon("img//heart-active.png"));
-                    listFavouriteWord.addFavouriteWord(word);
+                    if(language) listFavouriteWordEng.addFavouriteWord(word);
+                    else listFavouriteWordViet.addFavouriteWord(word);
                 }
             }
         });
@@ -449,10 +451,13 @@ public class MainFrame {
         JTextField wordField = new JTextField(20);
         wordField.setPreferredSize(new Dimension(20, 30));
         wordField.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        JScrollPane scrollPane = new JScrollPane();
         JTextArea meaningField = new JTextArea(5, 20);
-        meaningField.setPreferredSize(new Dimension(20, 30));
-        meaningField.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        ///enter to new line
+        meaningField.setPreferredSize(new Dimension(20, 40));
+        meaningField.setBorder(BorderFactory.createEmptyBorder(2, 5, 0, 5));
+        scrollPane.setViewportView(meaningField);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        meaningField.setLineWrap(true);
         meaningField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -477,7 +482,7 @@ public class MainFrame {
         JPanel meaningPanel = new JPanel();
         meaningPanel.setLayout(new FlowLayout());
         meaningPanel.add(meaningLabel);
-        meaningPanel.add(meaningField);
+        meaningPanel.add(scrollPane);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
@@ -492,16 +497,24 @@ public class MainFrame {
             String [] meaningArray = meaning.split("\n");
             ArrayList<String> meaningList = new ArrayList<>();
             Collections.addAll(meaningList, meaningArray);
-            listAdded.addWord(word, meaningList);
-            try {
-                list.addWord(word, meaningList);
-                listAdded.addWord(word, meaningList);
-                JOptionPane.showMessageDialog(null, "Add new word successfully!");
-                addIcon.setIcon(new ImageIcon("img//add.png"));
-                frame.dispose();
-            } catch (RuntimeException ex) {
-                JOptionPane.showMessageDialog(null, "This word is already in the dictionary!");
+            try{
+                if(language){
+                    listEng.addWord(word, meaningList);
+                    listAddedEng.addWord(word, meaningList);
+                    JOptionPane.showMessageDialog(null, "Add word successfully");
+                }
+                else{
+                    listViet.addWord(word, meaningList);
+                    listAddedViet.addWord(word, meaningList);
+                    JOptionPane.showMessageDialog(null, "Thêm từ thành công");
+                }
+            }catch (Exception ex){
+                if(language) JOptionPane.showMessageDialog(null, "This word is already in the dictionary");
+                else JOptionPane.showMessageDialog(null, "Từ này đã có trong từ điển");
+                return;
             }
+            addIcon.setIcon(new ImageIcon("img//add.png"));
+            frame.dispose();
         });
         total.add(wordPanel, BorderLayout.PAGE_START);
         total.add(meaningPanel, BorderLayout.CENTER);
@@ -543,7 +556,9 @@ public class MainFrame {
         languagePanel.add(titleLanguageIcon);
         headerPanel.add(languagePanel, BorderLayout.CENTER);
         languageIcon.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        ArrayList<String> listWord = listFavouriteWord.getListWord();
+        ArrayList<String> listWord = new ArrayList<>();
+        if(changeLanguage)  listWord = listFavouriteWordEng.getListWord();
+        else listWord = listFavouriteWordViet.getListWord();
         String[][] column = {{"Word"}};
         String[][] data = new String[listWord.size()][1];
         for(int i = 0; i < listWord.size(); i++){
@@ -578,21 +593,15 @@ public class MainFrame {
         languageIcon.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(!changeLanguage) {
+                if(changeLanguage) {
                     languageIcon.setIcon(new ImageIcon("img//world-active.png"));
                     titleLanguageIcon.setText("Vietnamese");
-                    listFavouriteWord.writeFile("data//FavouriteWord_Viet.txt");
-                    listFavouriteWord.clearList();
-                    listFavouriteWord.readFile("data//FavouriteWord_Eng.txt");
-                    changeLanguage = true;
+                    changeLanguage = false;
                 }
                 else {
                     languageIcon.setIcon(new ImageIcon("img//world.png"));
                     titleLanguageIcon.setText("English");
-                    listFavouriteWord.writeFile("data//FavouriteWord_Eng.txt");
-                    listFavouriteWord.clearList();
-                    listFavouriteWord.readFile("data//FavouriteWord_Viet.txt");
-                    changeLanguage = false;
+                    changeLanguage = true;
                 }
                 //reload frame
                 frameX.remove(showFavouriteListPanel);
@@ -601,15 +610,9 @@ public class MainFrame {
                 frameX.repaint();
             }
         });
-        if(!changeLanguage){
-            listFavouriteWord.writeFile("data//FavouriteWord_Viet.txt");
-        }
-        else {
-            listFavouriteWord.writeFile("data//FavouriteWord_Eng.txt");
-        }
         return showFavouriteListPanel;
     }
-    private JPanel showStatistic(JFrame frame) {
+    private JPanel showStatistic(JFrame frame)  {
         JPanel showStatisticPanel = new JPanel();
         showStatisticPanel.setLayout(new BorderLayout());
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -697,7 +700,7 @@ public class MainFrame {
     private JPanel statisticsPanel(String begin, String end){
         JPanel statisticsPanel = new JPanel();
         statisticsPanel.setLayout(new BorderLayout());
-        JLabel title = new JLabel("Statistics from " + begin + " to " + end);
+        JLabel title = new JLabel();
         title.setFont(new Font("Arial", Font.PLAIN, 20));
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         title.setHorizontalAlignment(JLabel.CENTER);
@@ -706,10 +709,12 @@ public class MainFrame {
         if(changeStatistics){
             titleLanguageIcon.setText("English");
             languageIcon.setIcon(new ImageIcon("img//world.png"));
+            title.setText("Statistics from " + begin + " to " + end);
         }
         else {
             titleLanguageIcon.setText("Vietnamese");
             languageIcon.setIcon(new ImageIcon("img//world-active.png"));
+            title.setText("Thống kê từ " + begin + " đến " + end);
         }
         titleLanguageIcon.setFont(new Font("Arial", Font.PLAIN, 20));
         titleLanguageIcon.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 10));
@@ -732,7 +737,9 @@ public class MainFrame {
         table.setDefaultEditor(Object.class, null);
         table.setFont(new Font("Arial", Font.PLAIN, 15));
         table.setRowHeight(30);
-        Map<String, Integer> word = statisticsWord.getStatisticsWord(begin, end);
+        Map<String, Integer> word;
+        if(changeStatistics) word = statisticsWordEng.getStatisticsWord(begin, end);
+        else word = statisticsWordViet.getStatisticsWord(begin, end);
         for (Map.Entry<String, Integer> entry : word.entrySet()) {
             String key = entry.getKey();
             Integer value = entry.getValue();
@@ -755,7 +762,6 @@ public class MainFrame {
                     title.setText("Thống kê từ " + begin + " đến " + end);
                     column[0] = "Từ";
                     column[1] = "Số lần";
-                    statisticsWord.readFile("data//StatisticsWord_Viet.txt");
                     changeStatistics = false;
                 }
                 else {
@@ -764,12 +770,13 @@ public class MainFrame {
                     title.setText("Statistics from " + begin + " to " + end);
                     column[0] = "Word";
                     column[1] = "Times";
-                    statisticsWord.readFile("data//StatisticsWord_Eng.txt");
                     changeStatistics = true;
                 }
                 //  reload table
                 model.setRowCount(0);
-                Map<String, Integer> word = statisticsWord.getStatisticsWord(begin, end);
+                Map<String, Integer> word ;
+                if(!changeStatistics) word = statisticsWordViet.getStatisticsWord(begin, end);
+                else word = statisticsWordEng.getStatisticsWord(begin, end);
                 for (Map.Entry<String, Integer> entry : word.entrySet()) {
                     String key = entry.getKey();
                     Integer value = entry.getValue();
@@ -777,12 +784,6 @@ public class MainFrame {
                 }
             }
         });
-        if(!changeStatistics) {
-            statisticsWord.writeFile("data//StatisticsWord_Viet.txt");
-        }
-        else {
-            statisticsWord.writeFile("data//StatisticsWord_Eng.txt");
-        }
         scrollPane.setPreferredSize(new Dimension(400, 400));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
         tablePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 20));

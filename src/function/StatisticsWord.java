@@ -7,22 +7,17 @@ import java.util.TreeMap;
 import java.io.*;
 
 public class StatisticsWord {
-        private class Word{
-            private String word;
-            private int count;
-
-            public Word(String word, int count) {
-                this.word = word;
-                this.count = count;
-            }
-        }
-
         private Map<String, Map<LocalDate, Integer>> listWord;
 
         public StatisticsWord() {
             listWord = new TreeMap<>();
         }
 
+        public void removeWord(String word) {
+            if(listWord.containsKey(word)){
+                listWord.remove(word);
+            }
+        }
         public void addWord(String word) {
             LocalDate date = LocalDate.now();
             if (listWord.containsKey(word)) {
@@ -69,6 +64,7 @@ public class StatisticsWord {
                         }
                 }
         }
+
         public void readFile(String path) {
             listWord.clear();
             File file = new File(path);
@@ -118,10 +114,6 @@ public class StatisticsWord {
                 if (count > 0) {
                     listStatisticsWord.put(word, count);
                 }
-            }
-            //print
-            for(String word: listStatisticsWord.keySet()){
-                System.out.println(word + " " + listStatisticsWord.get(word));
             }
             return listStatisticsWord;
         }

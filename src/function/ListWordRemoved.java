@@ -15,7 +15,9 @@ public class ListWordRemoved {
     }
 
     public void addWord(String word) {
-        listWord.add(word);
+        if(!listWord.contains(word)){
+            listWord.add(word);
+        }
     }
 
     public void writeFile(String path){
